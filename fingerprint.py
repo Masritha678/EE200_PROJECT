@@ -5,37 +5,21 @@ import numpy as np
 import librosa
 from scipy.ndimage import maximum_filter
 
-# =====================================================
-# CONFIG
-# =====================================================
 
-SR = 11025 # Sample rate
-N_FFT = 2048  # FFT window size
-HOP_LENGTH = 512  # Hop length for STFT
+SR = 11025 
+N_FFT = 2048  
+HOP_LENGTH = 512  
 
-PEAK_NEIGHBORHOOD = 20  # Peak detection neighborhood size
-PEAK_THRESHOLD_DB = -60  # Peak detection threshold
-
-FAN_VALUE = 15  # Number of peaks to pair with each peak
-MAX_TIME_DELTA = 200  # Max time difference for hash pairing
-MIN_TIME_DELTA = 1  # Min time difference for hash pairing
+PEAK_NEIGHBORHOOD = 20 
+PEAK_THRESHOLD_DB = -60  
+FAN_VALUE = 15  
+MAX_TIME_DELTA = 200  
+MIN_TIME_DELTA = 1  
 
 
-# =====================================================
-# AUDIO LOADING
-# =====================================================
 
 def load_audio(path, sr=SR):
-    """
-    Load audio file with librosa.
-
-    Args:
-        path (str): Path to audio file
-        sr (int): Target sample rate
-
-    Returns:
-        np.ndarray: Audio time series
-    """
+   
     y, _ = librosa.load(
         path,
         sr=sr,
@@ -45,26 +29,14 @@ def load_audio(path, sr=SR):
     return y
 
 
-# =====================================================
-# SPECTROGRAM
-# =====================================================
+
 
 def compute_spectrogram(
         y,
         n_fft=N_FFT,
         hop=HOP_LENGTH
 ):
-    """
-    Compute STFT spectrogram.
-
-    Args:
-        y (np.ndarray): Audio time series
-        n_fft (int): FFT window size
-        hop (int): Hop length
-
-    Returns:
-        tuple: (spectrogram_db, frequencies, times)
-    """
+   
     D = librosa.stft(
         y,
         n_fft=n_fft,
@@ -92,26 +64,14 @@ def compute_spectrogram(
     return S_db, freqs, times
 
 
-# =====================================================
-# PEAK DETECTION
-# =====================================================
+
 
 def get_peaks(
         S_db,
         neighborhood=PEAK_NEIGHBORHOOD,
         thresh=PEAK_THRESHOLD_DB
 ):
-    """
-    Detect local maxima (peaks) in spectrogram.
-
-    Args:
-        S_db (np.ndarray): Spectrogram in dB
-        neighborhood (int): Neighborhood size for local max detection
-        thresh (float): Threshold in dB
-
-    Returns:
-        list: List of (freq_bin, time_frame) tuples for detected peaks
-    """
+  
     local_max = (
             maximum_filter(
                 S_db,
@@ -137,9 +97,7 @@ def get_peaks(
     )
 
 
-# =====================================================
-# HASHING
-# =====================================================
+
 
 def generate_hashes(
         peaks,
@@ -147,19 +105,7 @@ def generate_hashes(
         min_td=MIN_TIME_DELTA,
         max_td=MAX_TIME_DELTA
 ):
-    """
-    Generate anchor hashes from peaks.
-    Each hash is: (freq1, freq2, time_delta)
-
-    Args:
-        peaks (list): List of (freq, time) peaks
-        fan_value (int): Number of peaks to pair with
-        min_td (int): Minimum time delta
-        max_td (int): Maximum time delta
-
-    Yields:
-        tuple: (hash_string, anchor_time)
-    """
+   
     for i, (f1, t1) in enumerate(peaks):
 
         for j in range(
@@ -185,20 +131,9 @@ def generate_hashes(
             yield h, t1
 
 
-# =====================================================
-# FINGERPRINT
-# =====================================================
 
 def fingerprint(y):
-    """
-    Generate fingerprint for audio clip.
-
-    Args:
-        y (np.ndarray): Audio time series
-
-    Returns:
-        list: List of (hash, time) pairs
-    """
+   
     S_db, _, _ = compute_spectrogram(y)
 
     peaks = get_peaks(S_db)
@@ -208,24 +143,10 @@ def fingerprint(y):
     )
 
 
-# =====================================================
-# DATABASE
-# =====================================================
 
 def build_database(song_dir):
-    """
-    Build fingerprint database from directory of songs.
-
-    Args:
-        song_dir (str): Path to directory containing audio files
-                       Supports Windows paths like: C:\\Users\\Shreya\\Downloads\\...
-
-    Returns:
-        tuple: (database_dict, songs_list)
-               - database_dict: hash -> [(song_name, time), ...]
-               - songs_list: list of song names
-    """
-    # Normalize Windows path
+   
+   
     song_dir = os.path.normpath(song_dir)
 
     if not os.path.isdir(song_dir):
@@ -235,7 +156,7 @@ def build_database(song_dir):
 
     songs = []
 
-    # Find audio files (case-insensitive for Windows)
+    
     files = sorted(set(
         glob.glob(
             os.path.join(song_dir, "*.mp3")
@@ -300,26 +221,14 @@ def build_database(song_dir):
     return db, songs
 
 
-# =====================================================
-# IDENTIFICATION
-# =====================================================
+
 
 def identify(
         query_y,
         db,
         top_n=5
 ):
-    """
-    Identify query audio against database.
-
-    Args:
-        query_y (np.ndarray): Query audio time series
-        db (dict): Fingerprint database
-        top_n (int): Number of top candidates to return
-
-    Returns:
-        list: Top matches as [(song_name, score), ...]
-    """
+   
     query_hashes = fingerprint(
         query_y
     )
@@ -354,27 +263,14 @@ def identify(
     return ranked[:top_n]
 
 
-# =====================================================
-# OFFSET HISTOGRAM (for visualization)
-# =====================================================
+
 
 def get_offset_histogram(
         query_y,
         db,
         target_song
 ):
-    """
-    Get offset histogram for a specific song.
-    Used for visualization in the app.
-
-    Args:
-        query_y (np.ndarray): Query audio
-        db (dict): Fingerprint database
-        target_song (str): Song name to analyze
-
-    Returns:
-        dict: Counter of offset -> match count
-    """
+    
     query_hashes = fingerprint(
         query_y
     )
