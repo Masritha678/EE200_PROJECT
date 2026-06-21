@@ -43,7 +43,7 @@ def load_database():
 
 db = load_database()
 
-]
+
 col1,col2 = st.columns([1, 4])
 with col1:
 
