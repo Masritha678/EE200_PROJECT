@@ -14,7 +14,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better aesthetics
 
 st.markdown("""
     <style>
@@ -44,10 +43,7 @@ def load_database():
 
 db = load_database()
 
-# =====================================================
-# HEADER
-# =====================================================
-
+]
 col1,col2 = st.columns([1, 4])
 with col1:
 
@@ -59,9 +55,7 @@ with col2:
 
 st.divider()
 
-# =====================================================
-# NAVIGATION
-# =====================================================
+
 
 mode = st.sidebar.radio(
     "🎯 Choose Mode",
@@ -69,9 +63,7 @@ mode = st.sidebar.radio(
     key="mode_selector"
 )
 
-# =====================================================
-# LIBRARY MODE
-# =====================================================
+
 
 if mode == "📚 Library":
     st.subheader("📚 Song Library")
@@ -104,9 +96,6 @@ if mode == "📚 Library":
     else:
         st.warning("⚠️ No songs in database. Run build_database.py first.")
 
-# =====================================================
-# IDENTIFY MODE
-# =====================================================
 
 elif mode == "🔍 Identify":
     st.subheader("🔍 Identify a Clip")
@@ -133,7 +122,7 @@ elif mode == "🔍 Identify":
                 ["🎙️ Spectrogram", "⭐ Constellation Map", "🎯 Results", "📊 Offset Analysis"]
             )
 
-            # ==================== SPECTROGRAM ====================
+           
             with tab1:
                 st.subheader("Spectrogram Analysis")
                 S_db, freqs, times = compute_spectrogram(y)
@@ -153,7 +142,7 @@ elif mode == "🔍 Identify":
                 plt.tight_layout()
                 st.pyplot(fig)
 
-            # ==================== CONSTELLATION ====================
+          
             with tab2:
                 st.subheader("Constellation Map (Peak Detection)")
                 S_db, freqs, times = compute_spectrogram(y)
@@ -173,7 +162,7 @@ elif mode == "🔍 Identify":
                 plt.tight_layout()
                 st.pyplot(fig2)
 
-            # ==================== RESULTS ====================
+          
             with tab3:
                 st.subheader("🎯 Recognition Results")
 
@@ -182,11 +171,9 @@ elif mode == "🔍 Identify":
                 if len(result):
                     best_song, best_score = result[0]
 
-                    # Success message
                     st.success(f"✅ **Recognized Song**: {best_song}")
                     st.metric("Cluster Score", best_score)
 
-                    # Top candidates
                     st.write("**Top Candidates:**")
                     candidates = pd.DataFrame([
                         {"Rank": i + 1, "Song": song, "Score": score}
@@ -196,7 +183,7 @@ elif mode == "🔍 Identify":
                 else:
                     st.warning("⚠️ No match found. The clip may not be in the database.")
 
-            # ==================== OFFSET HISTOGRAM ====================
+           
             with tab4:
                 st.subheader("📊 Offset Histogram")
 
@@ -217,8 +204,6 @@ elif mode == "🔍 Identify":
                         ax3.set_ylabel("Number of Matches", fontsize=11)
                         ax3.set_title(f"Hash Alignment for '{best_song}'", fontsize=13, fontweight='bold')
                         ax3.grid(axis='y', alpha=0.3)
-
-                        # Highlight the peak
                         if matches:
                             peak_idx = matches.index(max(matches))
                             bars[peak_idx].set_color('lime')
@@ -234,9 +219,6 @@ elif mode == "🔍 Identify":
             if os.path.exists(path):
                 os.remove(path)
 
-# =====================================================
-# BATCH MODE
-# =====================================================
 
 elif mode == "📊 Batch":
     st.subheader("📊 Batch Identification")
@@ -283,12 +265,12 @@ elif mode == "📊 Batch":
             status_text.empty()
             progress_bar.empty()
 
-            # Display results
+           
             df = pd.DataFrame(rows)
             st.subheader("Results")
             st.dataframe(df, use_container_width=True, hide_index=True)
 
-            # Download button
+        
             csv = df.to_csv(index=False).encode()
             st.download_button(
                 label="⬇️ Download results.csv",
